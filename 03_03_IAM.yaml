@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: IAM Role for AWS Backup
+
+Resources:
+  AWSBackupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: AWSBackupDefaultServiceRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: backup.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup
+        - arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForRestores
+
+Outputs:
+  AWSBackupRoleId:
+    Value: !Ref AWSBackupRole
+    Export:
+      Name: AWSBackupRoleId
+  AWSBackupRoleArn:
+    Value: !GetAtt AWSBackupRole.Arn
+    Export:
+      Name: AWSBackupRoleArn

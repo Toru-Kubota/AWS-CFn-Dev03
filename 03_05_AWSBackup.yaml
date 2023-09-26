@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: AWS Backup for EC2
+
+Parameters:
+  Prefix:
+    Type: String
+  Cron:
+    Description: Time to do backup(cron)
+    Type: String
+    Default: cron(0 18 * * ? *)
+
+Resources:
+  BackupVault:
+    Type: AWS::Backup::BackupVault
+    Properties:
+      BackupVaultName: !Sub "${Prefix}-vault"
+
+  BackupPlan:
+    Type: AWS::Backup::BackupPlan
+    Properties: 
+      BackupPlan: 
+        BackupPlanName: !Sub "${Prefix}-plan"
+        BackupPlanRule: 
+          - RuleName: !Sub "${Prefix}-rule"
+            TargetBackupVault: !Ref BackupVault
+            ScheduleExpression: !Ref Cron
+            CompletionWindowMinutes: 300
+            StartWindowMinutes: 60
+            Lifecycle:
+              DeleteAfterDays: 14
+
+  BackupSelection:
+    Type: AWS::Backup::BackupSelection
+    Properties:
+      BackupPlanId: !Ref BackupPlan
+      BackupSelection:
+        SelectionName: !Sub "${Prefix}-selection"
+        IamRoleArn: !ImportValue AWSBackupRoleArn
+        ListOfTags:
+          -
+            ConditionType: "STRINGEQUALS"
+            ConditionKey: Backup
+            ConditionValue: "True"
